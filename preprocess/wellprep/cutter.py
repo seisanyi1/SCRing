@@ -10,9 +10,10 @@ from pathlib import Path
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
+from scipy import ndimage as ndi
 
 from .imaging import load_rgb, save_rgb, to_uint8
-from .render import circle_mask, warp_circle
+from .render import circle_mask, warp_circle, _anti_alias
 
 _FONT_DIR = Path(os.environ.get("WINDIR", r"C:\Windows")) / "Fonts"
 
@@ -98,6 +99,26 @@ def _sector_images(
     return sectors, patches
 
 
+def aligned_sector(rgb, cx, cy, radius, size, start, end):
+    """Inverse-map original RGB once; image-clockwise [start,end] -> Cartesian [0,width]."""
+    if not (radius > 0 and size >= 2 and 0 < end - start <= 360):
+        raise ValueError("Invalid sector geometry")
+    center = (size - 1) / 2.0
+    yy, xx = np.mgrid[:size, :size]
+    dx, dy = xx - center, yy - center
+    theta = np.mod(np.degrees(np.arctan2(-dy, dx)), 360.0)
+    mask = (np.hypot(dx, dy) <= size / 2.0 - 0.5) & (theta < end - start)
+    # Inverse of a Cartesian CCW rotation by end degrees, represented in y-down pixels.
+    a = math.radians(end)
+    scale = 2.0 * radius / size
+    sx = cx + scale * (math.cos(a) * dx - math.sin(a) * dy)
+    sy = cy + scale * (math.sin(a) * dx + math.cos(a) * dy)
+    source = _anti_alias(rgb, scale)
+    output = np.stack([ndi.map_coordinates(source[..., c], [sy, sx], order=1,
+                       mode="constant", cval=0.0) for c in range(3)], axis=-1)
+    return np.clip(output * mask[..., None], 0.0, 1.0)
+
+
 def _contact_sheet(patches: list[np.ndarray], sectors: list[dict], path: Path) -> None:
     if not patches:
         return
@@ -174,6 +195,18 @@ def make_cut(
     sectors_dir = out_dir / "sectors"
     sectors_dir.mkdir(exist_ok=True)
     sectors, patches = _sector_images(circle, angle_step, sectors_dir, "sector", _font(12))
+    aligned_dir = out_dir / "sectors_aligned"
+    aligned_dir.mkdir(exist_ok=True)
+    aligned_patches = []
+    for row in sectors:
+        patch = aligned_sector(rgb, ux, uy, radius, int(out_size), row["start"], row["end"])
+        save_rgb(aligned_dir / row["file"], patch)
+        row["aligned_file"] = "sectors_aligned/" + row["file"]
+        row["rotation_ccw_deg"] = row["end"] % 360.0
+        row["aligned_start_deg"] = 0.0
+        row["aligned_end_deg"] = row["end"] - row["start"]
+        aligned_patches.append(patch)
+    _contact_sheet(aligned_patches, sectors, out_dir / "aligned_contact_sheet.png")
     contact_path = out_dir / "contact_sheet.png"
     _contact_sheet(patches, sectors, contact_path)
     overlay_path = out_dir / "overlay.png"
@@ -181,7 +214,8 @@ def make_cut(
 
     fields = [
         "index", "start", "end", "center", "pixels", "area_frac",
-        "green_mean", "green_median", "green_p10", "green_p90", "gray_mean", "file",
+        "green_mean", "green_median", "green_p10", "green_p90", "gray_mean", "file", "aligned_file", "rotation_ccw_deg",
+        "aligned_start_deg", "aligned_end_deg",
     ]
     with open(out_dir / "sectors.csv", "w", encoding="utf-8-sig", newline="") as fh:
         writer = csv.DictWriter(fh, fieldnames=fields, restval="")
@@ -205,6 +239,16 @@ def make_cut(
         "overlay_file": "overlay.png",
         "contact_file": "contact_sheet.png",
         "csv_file": "sectors.csv",
+        "aligned_contact_file": "aligned_contact_sheet.png",
+        "alignment": {
+            "version": 1, "source_center_xy": [ux, uy],
+            "output_center_pixel_xy": [(int(out_size) - 1) / 2.0] * 2,
+            "source_pixels_per_output_pixel": 2.0 * radius / int(out_size),
+            "source_angles": "clockwise from +x (image y down)",
+            "output_angles": "counterclockwise from +x (Cartesian y up)",
+            "sampling": "original RGB, antialias downsampling, bilinear, mask after sampling",
+            "output_bit_depth": 8,
+        },
     }
     with open(out_dir / "cut.json", "w", encoding="utf-8") as fh:
         json.dump(info, fh, ensure_ascii=False, indent=2)

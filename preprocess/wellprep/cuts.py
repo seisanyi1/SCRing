@@ -127,7 +127,9 @@ class CutStore:
         with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as zf:
             for image in sectors:
                 zf.write(image, arcname=image.name)
-            for extra in ("sectors.csv", "cut.json"):
+            for image in sorted((out / "sectors_aligned").glob("*.png")):
+                zf.write(image, arcname="sectors_aligned/" + image.name)
+            for extra in ("sectors.csv", "cut.json", "aligned_contact_sheet.png"):
                 path = out / extra
                 if path.exists():
                     zf.write(path, arcname=extra)

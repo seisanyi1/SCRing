@@ -1424,6 +1424,7 @@ async function renderCutResult(cutId) {
         <button data-src="${esc(cut.circle_url)}" class="active">圆域</button>
         <button data-src="${esc(cut.overlay_url)}">分割线</button>
         <button data-src="${esc(cut.contact_url)}">扇形拼图</button>
+        ${cut.aligned_contact_url ? `<button data-src="${esc(cut.aligned_contact_url)}">方向矫正拼图</button>` : ""}
       </div>
       <div class="cut-preview"><img id="cut-img" src="${esc(firstUrl)}" alt=""></div>
     </div>
@@ -1431,7 +1432,7 @@ async function renderCutResult(cutId) {
     <div class="card" style="padding:14px">
       <div class="sector-table-wrap">
         <table class="sector-table">
-          <thead><tr><th>#</th><th>角度</th><th>绿色均值</th><th>绿色中位</th><th>P10</th><th>P90</th><th>面积%</th><th>PNG</th></tr></thead>
+          <thead><tr><th>#</th><th>角度</th><th>绿色均值</th><th>绿色中位</th><th>P10</th><th>P90</th><th>面积%</th><th>PNG</th><th>方向矫正 PNG</th></tr></thead>
           <tbody id="sector-rows">
             ${rows.map((r) => `
               <tr data-url="${esc(r.url)}" data-angle="${fmtNum(r.start, 0)}–${fmtNum(r.end, 0)}">
@@ -1443,6 +1444,7 @@ async function renderCutResult(cutId) {
                 <td>${fmtNum(r.green_p90, 4)}</td>
                 <td>${fmtNum((r.area_frac || 0) * 100, 1)}</td>
                 <td><a href="${esc(r.url)}" download>下载</a></td>
+                <td>${r.aligned_url ? `<a href="${esc(r.aligned_url)}" target="_blank" rel="noopener">查看</a> · <a href="${esc(r.aligned_url)}" download>下载</a>` : "需重新切割"}</td>
               </tr>`).join('')}
           </tbody>
         </table>

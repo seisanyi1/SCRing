@@ -338,3 +338,12 @@ python preprocess\tools\stress_test.py
 ```powershell
 python preprocess\run_preprocess.py -i preprocess\samples -o preprocess\out_demo --workers 1 --polar
 ```
+
+
+## 扇区方向矫正输出
+
+新建切割自动生成 `sectors_aligned/`，保留原 `sectors/`。矫正图的圆心位于画布中心，原图顺时针扇区的终止边旋转至 +x，选中域沿逆时针展开，无镜像。采用原图直接采样、降采样抗锯齿、双线性插值，再施加黑色扇形掩膜。输出沿用 8 位 RGB PNG，不宣称保留高位深定量信息。
+
+选择“几何圆心”可保持提取圆心；选择“自动重心”时，两套输出都会沿用该重心。用于统一模型输入建议使用几何圆心。张角不超过 90° 才全部位于第一象限；大于 90° 不会被强行压缩。末尾不足整份的扇区按实际张角导出，见 CSV 的 aligned_end_deg。
+
+界面结果页支持“方向矫正拼图”及逐张查看/下载；扇形 ZIP 含 sectors_aligned 子目录、CSV 与变换元数据 cut.json。旧记录需重新切割才能生成新输出，统计列仍对应原位置扇区。训练请使用单张矫正图，不使用带文字的拼图。

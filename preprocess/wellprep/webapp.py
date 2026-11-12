@@ -952,6 +952,7 @@ class Handler(BaseHTTPRequestHandler):
             ("circle", cut.get("circle_file")),
             ("overlay", cut.get("overlay_file")),
             ("contact", cut.get("contact_file")),
+            ("aligned_contact", cut.get("aligned_contact_file")),
             ("csv", cut.get("csv_file")),
         ):
             cut[key + "_url"] = base + quote(str(rel), safe="/") if rel else ""
@@ -959,6 +960,7 @@ class Handler(BaseHTTPRequestHandler):
         for row in cut.get("sector_rows", []):
             item = dict(row)
             item["url"] = base + quote(f"sectors/{row.get('file', '')}", safe="/")
+            item["aligned_url"] = base + quote(str(row["aligned_file"]), safe="/") if row.get("aligned_file") else ""
             rows.append(item)
         cut["sector_rows"] = rows
         return cut
