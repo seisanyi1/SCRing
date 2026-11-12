@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Green-well ROI 预处理质量报告</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Times New Roman", "SimSun", "宋体", serif;
+         background: #f5f6f8; color: #1c2430; }
+  header { background: #0f1b2a; color: #eaf2ff; padding: 22px 28px 18px; }
+  header h1 { margin: 0 0 6px; font-size: 20px; font-weight: 600; }
+  header p { margin: 0; color: #9fb3c8; font-size: 13px; }
+  .wrap { padding: 20px 28px 48px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+           gap: 12px; margin-bottom: 18px; }
+  .card { background: #fff; border: 1px solid #e2e7ee; border-radius: 10px; padding: 12px 14px; }
+  .card .k { color: #6b7a8d; font-size: 12px; }
+  .card .v { font-size: 22px; font-weight: 600; margin-top: 2px; }
+  .toolbar { display: flex; gap: 8px; align-items: center; margin: 4px 0 12px; }
+  .toolbar button { border: 1px solid #cfd8e3; background: #fff; color: #24303f;
+                     padding: 6px 12px; border-radius: 7px; cursor: pointer; font-size: 13px; }
+  .toolbar button.active { background: #1454a8; border-color: #1454a8; color: #fff; }
+  .toolbar .hint { color: #6b7a8d; font-size: 12px; margin-left: auto; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #e2e7ee;
+           border-radius: 10px; overflow: hidden; }
+  thead th { position: sticky; top: 0; background: #eef2f7; font-size: 12px; color: #405268;
+              text-align: center; padding: 8px 10px; border-bottom: 1px solid #dbe2ec; }
+  tbody td { padding: 8px 10px; border-bottom: 1px solid #eef1f5; font-size: 13px; vertical-align: middle; text-align: center; }
+  tbody tr:hover { background: #f8fbff; }
+  td.num { text-align: center; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.strong { font-weight: 600; }
+  td.file { max-width: 380px; overflow-wrap: anywhere; }
+  td.file .note { color: #a05a00; font-size: 11px; margin-top: 2px; }
+  td.thumb img { width: 96px; height: 54px; object-fit: cover; border-radius: 6px;
+                  border: 1px solid #dbe2ec; display: block; margin: 0 auto; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px;
+            font-weight: 600; white-space: nowrap; }
+  .badge.ok { background: #e3f6ea; color: #157347; }
+  .badge.review { background: #fff3cd; color: #8a6100; }
+  .badge.not_found { background: #e6eefb; color: #1d4f91; }
+  .badge.error { background: #fde8e8; color: #a61b1b; }
+  footer { color: #7c8a9c; font-size: 12px; padding: 18px 28px; }
+</style></head>
+<body>
+<header>
+  <h1>Green-well ROI 预处理质量报告</h1>
+  <p>生成时间 2026-11-12 11:35:58 · feature=green_excess, margin=1.35, out_size=512, select=largest, edge_level=0.50, rays=720</p>
+</header>
+<div class="wrap">
+  <div class="cards">
+    <div class="card"><div class="k">图片数</div><div class="v">1</div></div><div class="card"><div class="k">圆域数</div><div class="v">1</div></div><div class="card"><div class="k">通过</div><div class="v">1</div></div><div class="card"><div class="k">待复核</div><div class="v">0</div></div><div class="card"><div class="k">错误</div><div class="v">0</div></div><div class="card"><div class="k">半径中位数</div><div class="v">479.3 px</div></div><div class="card"><div class="k">半径范围</div><div class="v">479–479 px</div></div><div class="card"><div class="k">覆盖率中位数</div><div class="v">1.000</div></div>
+  </div>
+  <div class="toolbar">
+    <button data-filter="all" class="active">全部</button>
+    <button data-filter="review">待复核</button>
+    <button data-filter="bad">未找到/错误</button>
+    <button data-filter="ok">仅通过</button>
+    <span class="hint">点击缩略图可查看原尺寸叠加图；半径单位为源图像素</span>
+  </div>
+  <table>
+    <thead><tr>
+      <th>#</th><th>文件</th><th>状态</th><th>cx</th><th>cy</th><th>半径</th>
+      <th>覆盖率</th><th>SNR</th><th>径向CV</th><th>耗时 ms</th><th>预览</th>
+    </tr></thead>
+    <tbody>
+    <tr data-status='ok'><td class='num'>1</td><td class='file'>26-3-662.jpg<div class='note'></div></td><td><span class='badge ok'>通过</span></td><td class='num'>1428.5</td><td class='num'>740.9</td><td class='num strong'>479.3</td><td class='num'>1.000</td><td class='num'>73.0</td><td class='num'>0.011</td><td class='num'>959</td><td class='thumb'><a href="overlay/26-3-662.jpg" target="_blank"><img loading="lazy" src="thumb/26-3-662.jpg" alt="preview"></a></td></tr>
+    </tbody>
+  </table>
+</div>
+<footer>wellprep · 非固定半径圆域提取 · 所有阈值与半径均由图像自适应估计</footer>
+<script>
+  const buttons = document.querySelectorAll('.toolbar button');
+  const rows = document.querySelectorAll('tbody tr');
+  buttons.forEach(btn => btn.addEventListener('click', () => {
+    buttons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const f = btn.dataset.filter;
+    rows.forEach(r => {
+      const s = r.dataset.status;
+      const show = f === 'all' ? true : (f === 'ok' ? s === 'ok' :
+                    f === 'review' ? s === 'review' : (s === 'not_found' || s === 'error'));
+      r.style.display = show ? '' : 'none';
+    });
+  }));
+</script>
+</body></html>

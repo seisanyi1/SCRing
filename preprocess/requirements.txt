@@ -1,0 +1,6 @@
+numpy>=1.24
+scipy>=1.10
+pillow>=10.0
+
+# Optional, only needed for YOLO dataset training (see README section 5):
+# ultralytics>=8.3
