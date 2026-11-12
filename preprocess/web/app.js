@@ -674,6 +674,7 @@ async function startRun() {
   const f = state.form;
   f.inputs = parseInputs($('#paths').value);
   f.name = $('#run-name').value.trim();
+  f.output_root = $('#output-root').value.trim();
   if (!f.inputs.length) {
     toast('请先添加图片文件或文件夹', 'bad');
     return;

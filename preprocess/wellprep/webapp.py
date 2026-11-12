@@ -24,6 +24,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, quote, unquote, urlparse
 
 from .config import Config
+from .output import create_run_output
 from .cuts import CutStore
 from .imaging import IMAGE_EXTS, load_rgb, save_rgb, stretch_for_display
 from .pipeline import analyze, collect_images
@@ -233,24 +234,9 @@ class RunManager:
                 active = self._runs.get(self._active, {})
                 raise RuntimeError(f"已有运行正在进行：{active.get('name', self._active)}，请等待完成或取消")
             run_id = datetime.now().strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:4]
-            output_root = str(payload.get("output_root") or "").strip()
-            if output_root:
-                parent = Path(output_root).expanduser()
-                if not parent.is_absolute():
-                    parent = Path.cwd() / parent
-                parent = parent.resolve()
-                try:
-                    parent.mkdir(parents=True, exist_ok=True)
-                    if not parent.is_dir():
-                        raise NotADirectoryError(str(parent))
-                    out = parent / run_id
-                    out.mkdir()
-                except OSError as exc:
-                    raise ValueError(f"无法创建输出目录 {parent}：{exc}") from exc
-            else:
-                parent = self.runs_root
-                out = parent / run_id
-                out.mkdir(parents=True, exist_ok=True)
+            parent, out = create_run_output(
+                payload.get("output_root") or "", self.runs_root, run_id
+            )
             name = str(payload.get("name") or "").strip() or f"运行 {datetime.now().strftime('%m-%d %H:%M')}"
             meta = {
                 "id": run_id,
