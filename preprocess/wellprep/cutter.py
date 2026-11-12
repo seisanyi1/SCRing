@@ -75,7 +75,9 @@ def _sector_images(
         if not np.any(wedge):
             continue
         img = circle * wedge[..., None]
-        name = f"{prefix}_{i + 1:03d}_{start:06.1f}-{end:06.1f}.png"
+        def angle_label(value):
+            return f"{int(value):03d}" if float(value).is_integer() else f"{value:010.6f}".rstrip("0").rstrip(".")
+        name = f"{prefix}-{angle_label(start)}-{angle_label(end)}deg.png"
         save_rgb(out_dir / name, img)
         vals = green[wedge]
         gvals = gray[wedge]
@@ -194,7 +196,7 @@ def make_cut(
 
     sectors_dir = out_dir / "sectors"
     sectors_dir.mkdir(exist_ok=True)
-    sectors, patches = _sector_images(circle, angle_step, sectors_dir, "sector", _font(12))
+    sectors, patches = _sector_images(circle, angle_step, sectors_dir, Path(source).stem, _font(12))
     aligned_dir = out_dir / "sectors_aligned"
     aligned_dir.mkdir(exist_ok=True)
     aligned_patches = []

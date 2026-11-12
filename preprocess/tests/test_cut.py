@@ -45,6 +45,8 @@ class TestCut(unittest.TestCase):
             {"angle_step": 45, "out_size": 256, "center_mode": "geometric"},
         )
         self.assertEqual(cut["sectors"], 8)
+        self.assertEqual(cut["sector_rows"][0]["file"], "well-000-045deg.png")
+        self.assertEqual(cut["sector_rows"][-1]["file"], "well-315-360deg.png")
         self.assertEqual(len(cut["sector_rows"]), 8)
         self.assertLess(cut["center_offset"], 5.0)
         out = Path(cut["output"])

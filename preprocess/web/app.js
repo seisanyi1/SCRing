@@ -1406,10 +1406,12 @@ async function renderCutResult(cutId) {
       <div class="head-actions">
         <a class="btn" href="/api/cuts/${esc(cut.id)}/zip">${ICONS.download} 扇形 ZIP</a>
         <a class="btn" href="${esc(cut.csv_url)}">${ICONS.download} CSV</a>
+        <button class="btn" id="cut-open-folder">${ICONS.folder} 输出目录</button>
         <button class="btn danger" id="cut-delete">${ICONS.trash} 删除</button>
       </div>
     </div>
 
+    <div class="hint" style="margin:8px 0 16px;overflow-wrap:anywhere">切割输出：${esc(cut.output || "")}<br>方向矫正图在该目录的 sectors_aligned 子文件夹。切割结果与提取输出目录分开保存。</div>
     <div class="cut-summary">
       <div class="card s-card"><div class="k">半径</div><div class="v">${fmtNum(cut.radius, 1)}<small> px</small></div></div>
       <div class="card s-card"><div class="k">圆心角</div><div class="v">${fmtNum(cut.angle_step, 0)}<small>°</small></div></div>
@@ -1451,6 +1453,12 @@ async function renderCutResult(cutId) {
       </div>
     </div>`;
 
+  $('#cut-open-folder').addEventListener('click', async () => {
+    try {
+      await api('/api/open', {method: 'POST', body: JSON.stringify({cut_id: cut.id})});
+      toast('已打开切割输出目录', 'ok');
+    } catch (err) { toast(err.message, 'bad'); }
+  });
   $('#cut-tabs').addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-src]');
     if (!btn) return;

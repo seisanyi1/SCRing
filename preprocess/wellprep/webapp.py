@@ -1121,9 +1121,10 @@ class Handler(BaseHTTPRequestHandler):
                 self._json({"run": meta}, 201)
                 return
             if path == "/api/open":
-                meta = self.manager.get(str(body.get("run_id", "")))
+                meta = (self.cuts.get(str(body["cut_id"])) if body.get("cut_id")
+                        else self.manager.get(str(body.get("run_id", ""))))
                 if not meta:
-                    self._error("运行记录不存在", 404)
+                    self._error("运行或切割记录不存在", 404)
                     return
                 target = Path(meta["output"]).resolve()
                 if not target.is_dir():
