@@ -11,6 +11,7 @@ from datetime import datetime
 from pathlib import Path
 
 from .cutter import make_cut
+from .output import create_run_output
 
 CUT_FIELDS = [
     "index", "start", "end", "center", "pixels", "area_frac",
@@ -82,13 +83,18 @@ class CutStore:
             raise ValueError("center_mode 必须是 geometric 或 auto")
 
         cut_id = datetime.now().strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:4]
-        out_dir = self.root / cut_id
-        out_dir.mkdir(parents=True, exist_ok=True)
+        if not run_meta.get("output"):
+            raise ValueError("提取记录缺少输出目录，请重新运行圆域提取")
+        run_output = Path(run_meta["output"]).resolve()
+        if not run_output.is_dir():
+            raise ValueError(f"提取结果目录不存在：{run_output}")
+        _, out_dir = create_run_output(str(run_output / "cuts"), self.root, cut_id)
         meta = {
             "id": cut_id,
             "created_at": datetime.now().astimezone().isoformat(timespec="seconds"),
             "run_id": run_meta.get("id", ""),
             "run_name": run_meta.get("name", ""),
+            "run_output": str(run_output),
             "file": row.get("file", ""),
             "rel_path": row.get("rel_path", ""),
             "source_name": Path(str(row.get("file", ""))).name,
@@ -106,7 +112,8 @@ class CutStore:
                 meta,
             )
         except BaseException:
-            shutil.rmtree(out_dir, ignore_errors=True)
+            if out_dir.resolve() == (run_output / "cuts" / cut_id).resolve():
+                shutil.rmtree(out_dir, ignore_errors=True)
             raise
         info = result["info"]
         info["output"] = str(out_dir)
@@ -136,11 +143,16 @@ class CutStore:
         return target
 
     def delete(self, cut_id: str) -> dict | None:
-        item = self._items.pop(cut_id, None)
+        item = self._items.get(cut_id)
         if not item:
             return None
         out = Path(str(item.get("output", ""))).resolve()
-        if out.is_relative_to(self.root) and out != self.root:
-            shutil.rmtree(out, ignore_errors=True)
+        expected = ((Path(item["run_output"]).resolve() / "cuts" / cut_id).resolve()
+                    if item.get("run_output") else (self.root / cut_id).resolve())
+        if out != expected or out.name != cut_id:
+            raise ValueError("切割输出路径与记录不一致，拒绝删除")
+        if out.exists():
+            shutil.rmtree(out)
+        self._items.pop(cut_id)
         self._save()
         return item

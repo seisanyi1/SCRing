@@ -1411,7 +1411,7 @@ async function renderCutResult(cutId) {
       </div>
     </div>
 
-    <div class="hint" style="margin:8px 0 16px;overflow-wrap:anywhere">切割输出：${esc(cut.output || "")}<br>方向矫正图在该目录的 sectors_aligned 子文件夹。切割结果与提取输出目录分开保存。</div>
+    <div class="hint" style="margin:8px 0 16px;overflow-wrap:anywhere">切割输出：${esc(cut.output || "")}<br>方向矫正图在该目录的 sectors_aligned 子文件夹。新切割默认保存在对应提取结果目录的 cuts 子文件夹。</div>
     <div class="cut-summary">
       <div class="card s-card"><div class="k">半径</div><div class="v">${fmtNum(cut.radius, 1)}<small> px</small></div></div>
       <div class="card s-card"><div class="k">圆心角</div><div class="v">${fmtNum(cut.angle_step, 0)}<small>°</small></div></div>

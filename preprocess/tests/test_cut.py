@@ -34,7 +34,7 @@ class TestCut(unittest.TestCase):
 
         store = CutStore(TMP / "cuts")
         cut = store.create(
-            {"id": "run-1", "name": "unit"},
+            {"id": "run-1", "name": "unit", "output": str(img_dir)},
             {
                 "file": str(path),
                 "rel_path": "well.png",
@@ -50,6 +50,8 @@ class TestCut(unittest.TestCase):
         self.assertEqual(len(cut["sector_rows"]), 8)
         self.assertLess(cut["center_offset"], 5.0)
         out = Path(cut["output"])
+        self.assertEqual(out.parent, (img_dir / "cuts").resolve())
+        self.assertFalse((store.root / cut["id"]).exists())
         self.assertTrue((out / "circle.png").exists())
         self.assertTrue((out / "overlay.png").exists())
         self.assertTrue((out / "contact_sheet.png").exists())
@@ -62,6 +64,7 @@ class TestCut(unittest.TestCase):
             self.assertEqual(len([n for n in z.namelist() if n.startswith("sectors_aligned/")]), 8)
         self.assertTrue(store.delete(cut["id"]))
         self.assertFalse(out.exists())
+        self.assertTrue(path.is_file())
 
     def test_alignment_not_mirrored(self):
         yy, xx = np.mgrid[:201, :201]

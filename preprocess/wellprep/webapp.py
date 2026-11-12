@@ -1044,7 +1044,11 @@ class Handler(BaseHTTPRequestHandler):
 
             m = re.fullmatch(r"/cuts/([0-9]{8}-[0-9]{6}-[0-9a-f]{4})/files/(.+)", path)
             if m:
-                root = (self.cuts.root / m.group(1)).resolve()
+                cut = self.cuts.get(m.group(1))
+                if not cut:
+                    self._error("切割记录不存在", 404)
+                    return
+                root = Path(cut["output"]).resolve()
                 target = self._safe_child(root, m.group(2))
                 if target is None:
                     self._error("非法路径", 403)
