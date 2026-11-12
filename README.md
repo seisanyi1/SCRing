@@ -14,7 +14,7 @@
 4. 执行以下命令安装依赖（首次安装需要联网）：
 
    ```powershell
-   python -m pip install -r preprocessequirements.txt
+   python -m pip install -r preprocess/requirements.txt
    ```
 
 5. 进入 `preprocess` 文件夹，双击 **`start_ui.bat`**。程序会启动本地服务，并自动打开浏览器操作界面。
